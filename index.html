@@ -6,156 +6,82 @@
     <meta name="theme-color" content="#0f172a">
     <title>AI Smart Remover</title>
     <style>
-        :root { 
-            --bg: #0f172a; 
-            --card: #1e293b; 
-            --text: #f8fafc; 
-            --muted: #94a3b8; 
-            --primary: #8b5cf6; 
-            --border: #334155; 
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --primary: #8b5cf6; --border: #334155; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            min-height: 100vh; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-        
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .header { text-align: center; margin-bottom: 20px; }
         .header h1 { font-size: 1.6em; background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header p { color: var(--muted); font-size: 0.85em; margin-top: 5px; }
-
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; }
-
-        .upload-btn {
-            display: block; width: 100%; padding: 15px; 
-            background: #334155; border: 2px dashed #475569; border-radius: 12px;
-            text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 15px;
-        }
+        .upload-btn { display: block; width: 100%; padding: 15px; background: #334155; border: 2px dashed #475569; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 15px; }
         .upload-btn:hover { background: #475569; border-color: var(--primary); }
         input[type="file"] { display: none; }
-
-        .canvas-container { 
-            position: relative; width: 100%; aspect-ratio: 1/1; background: #000; 
-            border-radius: 12px; overflow: hidden; cursor: crosshair; touch-action: none;
-            display: none;
-        }
+        .canvas-container { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 12px; overflow: hidden; cursor: crosshair; touch-action: none; display: none; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #imgCanvas { z-index: 1; }
-        #maskCanvas { z-index: 2; }
-
+        #imgCanvas { z-index: 1; } #maskCanvas { z-index: 2; }
         .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; display: none; }
         .control-group { flex: 1; min-width: 120px; }
         label { display: block; font-size: 0.8em; color: var(--muted); margin-bottom: 5px; }
-        
         input[type="range"] { width: 100%; accent-color: var(--primary); }
-        input[type="password"], textarea { 
-            width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); 
-            border-radius: 8px; color: var(--text); font-size: 0.9em; margin-bottom: 10px; resize: vertical;
-        }
+        input[type="password"], textarea { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9em; margin-bottom: 10px; resize: vertical; }
         textarea { min-height: 60px; font-family: inherit; }
-
-        .btn { 
-            width: 100%; padding: 14px; border: none; border-radius: 10px; 
-            font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s;
-        }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), #ec4899); color: white; }
         .btn-secondary { background: var(--border); color: var(--text); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .brush-preview { 
-            width: 20px; height: 20px; border-radius: 50%; background: rgba(239, 68, 68, 0.5); 
-            border: 2px solid #ef4444; position: fixed; pointer-events: none; z-index: 100; 
-            transform: translate(-50%, -50%); display: none;
-        }
-
+        .brush-preview { width: 20px; height: 20px; border-radius: 50%; background: rgba(239, 68, 68, 0.5); border: 2px solid #ef4444; position: fixed; pointer-events: none; z-index: 100; transform: translate(-50%, -50%); display: none; }
         .result-area { display: none; text-align: center; }
         .result-area img { width: 100%; border-radius: 12px; margin-bottom: 10px; }
-        
         .loader { display: none; text-align: center; padding: 20px; }
         .loader.active { display: block; }
-        .spinner { 
-            width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); 
-            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; 
-        }
+        .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .alert { 
-            padding: 10px; border-radius: 8px; font-size: 0.85em; margin-top: 10px; display: none; 
-        }
+        .alert { padding: 10px; border-radius: 8px; font-size: 0.85em; margin-top: 10px; display: none; }
         .alert.error { display: block; background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-        
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
         .mode-btn { flex: 1; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; text-align: center; font-size: 0.9em; }
         .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .info-box { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.85em; color: var(--muted); }
+        .info-box a { color: var(--primary); text-decoration: none; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1>✨ AI Smart Remover</h1>
         <p>Удали объект кистью или напиши, что убрать</p>
     </div>
-
     <div class="card">
-        <label class="upload-btn" id="uploadBtn">
-            📷 Нажми, чтобы выбрать фото
-            <input type="file" id="fileInput" accept="image/*">
-        </label>
-
-        <div class="canvas-container" id="canvasContainer">
-            <canvas id="imgCanvas"></canvas>
-            <canvas id="maskCanvas"></canvas>
-        </div>
-
+        <label class="upload-btn" id="uploadBtn">📷 Нажми, чтобы выбрать фото<input type="file" id="fileInput" accept="image/*"></label>
+        <div class="canvas-container" id="canvasContainer"><canvas id="imgCanvas"></canvas><canvas id="maskCanvas"></canvas></div>
         <div class="controls" id="brushControls">
-            <div class="control-group">
-                <label>Размер кисти: <span id="brushSizeVal">20</span>px</label>
-                <input type="range" id="brushSize" min="5" max="100" value="20">
-            </div>
-            <div class="control-group">
-                <button class="btn btn-secondary" onclick="clearMask()" style="margin-top: 22px;">🗑️ Очистить маску</button>
-            </div>
+            <div class="control-group"><label>Размер кисти: <span id="brushSizeVal">20</span>px</label><input type="range" id="brushSize" min="5" max="100" value="20"></div>
+            <div class="control-group"><button class="btn btn-secondary" onclick="clearMask()" style="margin-top: 22px;">🗑️ Очистить маску</button></div>
         </div>
     </div>
-
     <div class="card">
         <div class="mode-switch">
             <div class="mode-btn active" id="modeBrush" onclick="setMode('brush')">🖌️ Кисть</div>
             <div class="mode-btn" id="modeText" onclick="setMode('text')">💬 Текст</div>
         </div>
-
         <div id="textInputArea" style="display: none; margin-bottom: 10px;">
             <label>Что удалить? (на английском)</label>
             <textarea id="removePrompt" placeholder="Например: hat, sunglasses, watermark..."></textarea>
             <small style="color: var(--muted); font-size: 0.75em;">💡 Пиши конкретно: "red hat" лучше чем "hat"</small>
         </div>
-
-        <div style="margin-bottom: 10px;">
-            <label>🔑 Hugging Face Token</label>
-            <input type="password" id="apiKey" placeholder="hf_...">
+        <div class="info-box">
+            🔑 Нужен API ключ от <a href="https://replicate.com/account/api-tokens" target="_blank">Replicate</a> (бесплатные кредиты для новых пользователей)
         </div>
+        <div style="margin-bottom: 10px;"><label>Replicate API Token</label><input type="password" id="apiKey" placeholder="r8_..."></div>
         <button class="btn btn-primary" id="removeBtn" onclick="removeObject()" disabled>🪄 Удалить</button>
-        
-        <div class="loader" id="loader">
-            <div class="spinner"></div>
-            <div style="font-size: 0.9em; color: var(--muted);">Нейросеть работает...<br>10-30 секунд</div>
-        </div>
+        <div class="loader" id="loader"><div class="spinner"></div><div style="font-size: 0.9em; color: var(--muted);">Нейросеть работает...<br>10-30 секунд</div></div>
         <div class="alert" id="alertBox"></div>
     </div>
-
     <div class="card result-area" id="resultArea">
         <h3 style="margin-bottom: 10px;">✅ Готово!</h3>
         <img id="resultImage">
         <a id="downloadLink" class="btn btn-primary" style="display:block; text-decoration:none; text-align:center;">💾 Сохранить</a>
         <button class="btn btn-secondary" onclick="resetApp()" style="margin-top: 10px;">🔄 Новое фото</button>
     </div>
-
     <div class="brush-preview" id="brushPreview"></div>
 
     <script>
@@ -178,92 +104,55 @@
         const resultImage = document.getElementById('resultImage');
         const downloadLink = document.getElementById('downloadLink');
         const removePrompt = document.getElementById('removePrompt');
-
-        let isDrawing = false;
-        let hasImage = false;
-        let currentBrushSize = 20;
-        let currentMode = 'brush';
-
-        const savedToken = localStorage.getItem('hf_token');
+        let isDrawing = false, hasImage = false, currentBrushSize = 20, currentMode = 'brush';
+        const savedToken = localStorage.getItem('replicate_token');
         if (savedToken) document.getElementById('apiKey').value = savedToken;
 
         function setMode(mode) {
             currentMode = mode;
             document.getElementById('modeBrush').classList.toggle('active', mode === 'brush');
             document.getElementById('modeText').classList.toggle('active', mode === 'text');
-            
             if (mode === 'text') {
-                textInputArea.style.display = 'block';
-                brushControls.style.display = 'none';
-                maskCanvas.style.pointerEvents = 'none';
-                maskCanvas.style.opacity = '0';
+                textInputArea.style.display = 'block'; brushControls.style.display = 'none';
+                maskCanvas.style.pointerEvents = 'none'; maskCanvas.style.opacity = '0';
             } else {
-                textInputArea.style.display = 'none';
-                brushControls.style.display = 'flex';
-                maskCanvas.style.pointerEvents = 'auto';
-                maskCanvas.style.opacity = '1';
+                textInputArea.style.display = 'none'; brushControls.style.display = 'flex';
+                maskCanvas.style.pointerEvents = 'auto'; maskCanvas.style.opacity = '1';
             }
         }
 
         fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
+            const file = e.target.files[0]; if (!file) return;
             const img = new Image();
             img.onload = () => {
-                uploadBtn.style.display = 'none';
-                canvasContainer.style.display = 'block';
-                
+                uploadBtn.style.display = 'none'; canvasContainer.style.display = 'block';
                 setTimeout(() => {
                     const containerWidth = canvasContainer.offsetWidth;
                     const safeWidth = containerWidth > 0 ? containerWidth : canvasContainer.parentElement.offsetWidth - 40;
-                    
-                    const scale = safeWidth / img.width;
-                    const w = safeWidth;
-                    const h = Math.max(100, img.height * scale);
-                    
-                    imgCanvas.width = w; maskCanvas.width = w;
-                    imgCanvas.height = h; maskCanvas.height = h;
-                    
-                    ctxImg.drawImage(img, 0, 0, w, h);
-                    clearMask();
-                    
-                    hasImage = true;
-                    removeBtn.disabled = false;
-                    
-                    if (currentMode === 'brush') brushControls.style.display = 'flex';
-                    else textInputArea.style.display = 'block';
+                    const scale = safeWidth / img.width; const w = safeWidth; const h = Math.max(100, img.height * scale);
+                    imgCanvas.width = w; maskCanvas.width = w; imgCanvas.height = h; maskCanvas.height = h;
+                    ctxImg.drawImage(img, 0, 0, w, h); clearMask(); hasImage = true; removeBtn.disabled = false;
+                    if (currentMode === 'brush') brushControls.style.display = 'flex'; else textInputArea.style.display = 'block';
                 }, 50);
-            };
-            img.src = URL.createObjectURL(file);
+            }; img.src = URL.createObjectURL(file);
         });
 
         function getPos(e) {
             const rect = maskCanvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) * (maskCanvas.width / rect.width),
-                y: (clientY - rect.top) * (maskCanvas.height / rect.height)
-            };
+            return { x: (clientX - rect.left) * (maskCanvas.width / rect.width), y: (clientY - rect.top) * (maskCanvas.height / rect.height) };
         }
-
         function startDraw(e) { if (!hasImage || currentMode !== 'brush') return; isDrawing = true; draw(e); }
         function endDraw() { isDrawing = false; }
         function draw(e) {
-            if (!isDrawing || !hasImage || currentMode !== 'brush') return;
-            e.preventDefault();
-            const pos = getPos(e);
-            ctxMask.fillStyle = 'rgba(255, 0, 0, 0.5)';
-            ctxMask.beginPath();
-            ctxMask.arc(pos.x, pos.y, currentBrushSize / 2, 0, Math.PI * 2);
-            ctxMask.fill();
+            if (!isDrawing || !hasImage || currentMode !== 'brush') return; e.preventDefault();
+            const pos = getPos(e); ctxMask.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctxMask.beginPath(); ctxMask.arc(pos.x, pos.y, currentBrushSize / 2, 0, Math.PI * 2); ctxMask.fill();
         }
-
         maskCanvas.addEventListener('mousedown', startDraw);
         maskCanvas.addEventListener('mousemove', (e) => { draw(e); updateBrushPreview(e); });
-        maskCanvas.addEventListener('mouseup', endDraw);
-        maskCanvas.addEventListener('mouseleave', endDraw);
+        maskCanvas.addEventListener('mouseup', endDraw); maskCanvas.addEventListener('mouseleave', endDraw);
         maskCanvas.addEventListener('touchstart', startDraw, {passive: false});
         maskCanvas.addEventListener('touchmove', (e) => { draw(e); updateBrushPreview(e); }, {passive: false});
         maskCanvas.addEventListener('touchend', endDraw);
@@ -272,163 +161,115 @@
             if (currentMode !== 'brush') { brushPreview.style.display = 'none'; return; }
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            brushPreview.style.left = clientX + 'px';
-            brushPreview.style.top = clientY + 'px';
-            brushPreview.style.width = currentBrushSize + 'px';
-            brushPreview.style.height = currentBrushSize + 'px';
+            brushPreview.style.left = clientX + 'px'; brushPreview.style.top = clientY + 'px';
+            brushPreview.style.width = currentBrushSize + 'px'; brushPreview.style.height = currentBrushSize + 'px';
             brushPreview.style.display = 'block';
         }
         document.body.addEventListener('mouseleave', () => brushPreview.style.display = 'none');
-
-        brushSizeInput.addEventListener('input', (e) => {
-            currentBrushSize = e.target.value;
-            brushSizeVal.textContent = currentBrushSize;
-        });
-
+        brushSizeInput.addEventListener('input', (e) => { currentBrushSize = e.target.value; brushSizeVal.textContent = currentBrushSize; });
         function clearMask() { ctxMask.clearRect(0, 0, maskCanvas.width, maskCanvas.height); }
 
         async function removeObject() {
             const apiKey = document.getElementById('apiKey').value.trim();
-            if (!apiKey.startsWith('hf_')) {
-                showAlert('Введи токен (начинается с hf_)', 'error');
-                return;
-            }
-            localStorage.setItem('hf_token', apiKey);
-
+            if (!apiKey.startsWith('r8_')) { showAlert('Введи токен Replicate (начинается с r8_)', 'error'); return; }
+            localStorage.setItem('replicate_token', apiKey);
             if (currentMode === 'brush') {
                 const pixelData = ctxMask.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
                 let hasMask = false;
-                for (let i = 0; i < pixelData.length; i += 4) {
-                    if (pixelData[i] > 0) { hasMask = true; break; }
-                }
-                if (!hasMask) {
-                    showAlert('Закрась объект красной кистью!', 'error');
-                    return;
-                }
-            } else {
-                if (!removePrompt.value.trim()) {
-                    showAlert('Напиши, что нужно удалить!', 'error');
-                    return;
-                }
-            }
-
-            removeBtn.disabled = true;
-            loader.classList.add('active');
-            resultArea.style.display = 'none';
-            hideAlert();
-
+                for (let i = 0; i < pixelData.length; i += 4) { if (pixelData[i] > 0) { hasMask = true; break; } }
+                if (!hasMask) { showAlert('Закрась объект красной кистью!', 'error'); return; }
+            } else { if (!removePrompt.value.trim()) { showAlert('Напиши, что нужно удалить!', 'error'); return; } }
+            
+            removeBtn.disabled = true; loader.classList.add('active'); resultArea.style.display = 'none'; hideAlert();
+            
+            const timeoutId = setTimeout(() => {
+                loader.classList.remove('active');
+                showAlert('Превышено время ожидания.', 'error');
+                removeBtn.disabled = false;
+            }, 120000);
+            
             try {
                 const imageBlob = await new Promise(r => imgCanvas.toBlob(r, 'image/png'));
-                let payload;
+                const maskBlob = await new Promise(r => maskCanvas.toBlob(r, 'image/png'));
                 
-                if (currentMode === 'brush') {
-                    const maskBlob = await new Promise(r => maskCanvas.toBlob(r, 'image/png'));
-                    const readerImg = new FileReader();
-                    const readerMask = new FileReader();
-                    
-                    await new Promise((resolve, reject) => {
-                        readerImg.onload = () => {
-                            readerMask.onload = () => {
-                                payload = {
-                                    inputs: readerImg.result.split(',')[1],
-                                    parameters: {
-                                        mask_image: readerMask.result.split(',')[1],
-                                        prompt: "background, seamless texture, high quality",
-                                        negative_prompt: "object, item, artifact"
-                                    }
-                                };
-                                resolve();
-                            };
-                            readerMask.readAsDataURL(maskBlob);
-                        };
-                        readerImg.readAsDataURL(imageBlob);
-                    });
-                } else {
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = imgCanvas.width;
-                    tempCanvas.height = imgCanvas.height;
-                    const tCtx = tempCanvas.getContext('2d');
-                    tCtx.fillStyle = 'white';
-                    tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-                    
-                    const fullMaskBlob = await new Promise(r => tempCanvas.toBlob(r, 'image/png'));
-                    const readerImg = new FileReader();
-                    const readerMask = new FileReader();
-                    
-                    await new Promise((resolve, reject) => {
-                        readerImg.onload = () => {
-                            readerMask.onload = () => {
-                                payload = {
-                                    inputs: readerImg.result.split(',')[1],
-                                    parameters: {
-                                        mask_image: readerMask.result.split(',')[1],
-                                        prompt: removePrompt.value.trim() + ", removed, clean background, high quality",
-                                        negative_prompt: "keep, preserve, original"
-                                    }
-                                };
-                                resolve();
-                            };
-                            readerMask.readAsDataURL(fullMaskBlob);
-                        };
-                        readerImg.readAsDataURL(imageBlob);
-                    });
-                }
-
-                // РАБОЧАЯ МОДЕЛЬ: runwayml/stable-diffusion-inpainting
-                const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api-inference.huggingface.co/models/runwayml/stable-diffusion-inpainting'), {
-                    method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                // Конвертируем в base64 для отправки
+                const imgBase64 = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = () => r(reader.result.split(',')[1]);
+                    reader.readAsDataURL(imageBlob);
+                });
+                const maskBase64 = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = () => r(reader.result.split(',')[1]);
+                    reader.readAsDataURL(maskBlob);
                 });
 
+                // Отправляем запрос к Replicate API
+                const response = await fetch('https://api.replicate.com/v1/predictions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        version: '4c91b962e09c1e9c5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b',
+                        input: {
+                            image: `data:image/png;base64,${imgBase64}`,
+                            mask: `data:image/png;base64,${maskBase64}`,
+                            prompt: currentMode === 'text' ? removePrompt.value.trim() : 'background, clean, high quality',
+                            negative_prompt: 'object, item, artifact'
+                        }
+                    })
+                });
+                
+                clearTimeout(timeoutId);
+                
                 if (!response.ok) {
-                    if (response.status === 503) throw new Error('Модель загружается. Подожди 20с.');
-                    if (response.status === 401) throw new Error('Неверный токен.');
-                    if (response.status === 403) throw new Error('Доступ запрещен. Проверь email или создай новый токен.');
+                    if (response.status === 401) throw new Error('Неверный токен Replicate.');
+                    if (response.status === 402) throw new Error('Закончились бесплатные кредиты.');
                     throw new Error(`Ошибка API: ${response.status}`);
                 }
-
-                const data = await response.json();
-                const base64Img = data[0]?.image || data.image;
-                if (!base64Img) throw new Error('Получен пустой ответ');
                 
-                const url = `data:image/png;base64,${base64Img}`;
+                const data = await response.json();
+                const predictionId = data.id;
+                
+                // Ожидаем завершения обработки
+                let result = null;
+                for (let i = 0; i < 60; i++) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+                        headers: { 'Authorization': `Token ${apiKey}` }
+                    });
+                    const statusData = await statusResponse.json();
+                    if (statusData.status === 'succeeded') {
+                        result = statusData.output;
+                        break;
+                    } else if (statusData.status === 'failed') {
+                        throw new Error('Обработка не удалась.');
+                    }
+                }
+                
+                if (!result) throw new Error('Превышено время ожидания.');
+                
+                const url = Array.isArray(result) ? result[0] : result;
                 resultImage.src = url;
                 downloadLink.href = url;
                 downloadLink.download = `cleaned-${Date.now()}.png`;
-                
-                loader.classList.remove('active');
-                resultArea.style.display = 'block';
-                resultArea.scrollIntoView({behavior: 'smooth'});
-
+                loader.classList.remove('active'); resultArea.style.display = 'block'; resultArea.scrollIntoView({behavior: 'smooth'});
             } catch (err) {
-                loader.classList.remove('active');
-                showAlert(err.message, 'error');
-            } finally {
-                removeBtn.disabled = false;
+                clearTimeout(timeoutId);
+                loader.classList.remove('active'); showAlert(err.message, 'error'); 
+            } finally { 
+                removeBtn.disabled = false; 
             }
         }
 
         function resetApp() {
-            resultArea.style.display = 'none';
-            canvasContainer.style.display = 'none';
-            brushControls.style.display = 'none';
-            textInputArea.style.display = 'none';
-            uploadBtn.style.display = 'block';
-            fileInput.value = '';
-            hasImage = false;
-            clearMask();
-            removePrompt.value = '';
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            resultArea.style.display = 'none'; canvasContainer.style.display = 'none'; brushControls.style.display = 'none';
+            textInputArea.style.display = 'none'; uploadBtn.style.display = 'block'; fileInput.value = '';
+            hasImage = false; clearMask(); removePrompt.value = ''; window.scrollTo({top: 0, behavior: 'smooth'});
         }
-
-        function showAlert(msg, type) {
-            alertBox.textContent = msg;
-            alertBox.className = `alert ${type}`;
-        }
+        function showAlert(msg, type) { alertBox.textContent = msg; alertBox.className = `alert ${type}`; }
         function hideAlert() { alertBox.className = 'alert'; }
     </script>
 </body>
