@@ -23,7 +23,6 @@
             text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 15px;
         }
         .upload-btn:hover { background: #475569; border-color: var(--primary); }
-        .upload-btn.has-file { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981; border-style: solid; }
         input[type="file"] { display: none; }
 
         /* Canvas Container */
@@ -36,7 +35,7 @@
         #imgCanvas { z-index: 1; }
         #maskCanvas { z-index: 2; }
 
-        .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; display: none; }
         .control-group { flex: 1; min-width: 120px; }
         label { display: block; font-size: 0.8em; color: var(--muted); margin-bottom: 5px; }
         
@@ -96,7 +95,7 @@
             <canvas id="maskCanvas"></canvas>
         </div>
 
-        <div class="controls" id="brushControls" style="display:none;">
+        <div class="controls" id="brushControls">
             <div class="control-group">
                 <label>Размер кисти: <span id="brushSizeVal">20</span>px</label>
                 <input type="range" id="brushSize" min="5" max="100" value="20">
@@ -164,23 +163,29 @@
             
             const img = new Image();
             img.onload = () => {
-                // Масштабируем под ширину контейнера
-                const containerWidth = canvasContainer.offsetWidth;
-                const scale = containerWidth / img.width;
-                const w = containerWidth;
-                const h = img.height * scale;
+                // Сначала показываем контейнер, чтобы браузер мог вычислить его размеры
+                uploadBtn.style.display = 'none';
+                canvasContainer.style.display = 'block';
+                brushControls.style.display = 'flex';
                 
-                imgCanvas.width = w; maskCanvas.width = w;
-                imgCanvas.height = h; maskCanvas.height = h;
-                
-                ctxImg.drawImage(img, 0, 0, w, h);
-                clearMask();
-                
-                hasImage = true;
-                uploadBtn.style.display = 'none'; // Скрываем кнопку загрузки
-                canvasContainer.style.display = 'block'; // Показываем холст
-                brushControls.style.display = 'flex'; // Показываем кисть
-                removeBtn.disabled = false;
+                // Небольшая задержка для обновления DOM
+                setTimeout(() => {
+                    const containerWidth = canvasContainer.offsetWidth;
+                    const safeWidth = containerWidth > 0 ? containerWidth : canvasContainer.parentElement.offsetWidth - 40;
+                    
+                    const scale = safeWidth / img.width;
+                    const w = safeWidth;
+                    const h = Math.max(100, img.height * scale);
+                    
+                    imgCanvas.width = w; maskCanvas.width = w;
+                    imgCanvas.height = h; maskCanvas.height = h;
+                    
+                    ctxImg.drawImage(img, 0, 0, w, h);
+                    clearMask();
+                    
+                    hasImage = true;
+                    removeBtn.disabled = false;
+                }, 50);
             };
             img.src = URL.createObjectURL(file);
         });
