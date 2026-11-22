@@ -3,142 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
     <title>AI Smart Remover</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --primary: #8b5cf6; --border: #334155; }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { font-size: 1.6em; background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header p { color: var(--muted); font-size: 0.85em; margin-top: 5px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; }
-        .upload-btn { display: block; width: 100%; padding: 15px; background: #334155; border: 2px dashed #475569; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 15px; }
-        .upload-btn:hover { background: #475569; border-color: var(--primary); }
+        :root {
+            --bg: #0f172a;
+            --primary: #3b82f6;
+            --text: #f8fafc;
+            --card: #1e293b;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed var(--primary);
+            background: var(--card);
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        #preview {
+            width: 100%;
+            border-radius: 10px;
+            display: none;
+            margin-top: 20px;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+            display: none;
+        }
         input[type="file"] { display: none; }
-        .canvas-container { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 12px; overflow: hidden; cursor: crosshair; touch-action: none; display: none; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #imgCanvas { z-index: 1; } #maskCanvas { z-index: 2; }
-        .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .control-group { flex: 1; min-width: 120px; }
-        label { display: block; font-size: 0.8em; color: var(--muted); margin-bottom: 5px; }
-        input[type="range"] { width: 100%; accent-color: var(--primary); }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), #ec4899); color: white; }
-        .btn-secondary { background: var(--border); color: var(--text); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .brush-preview { width: 20px; height: 20px; border-radius: 50%; background: rgba(239, 68, 68, 0.5); border: 2px solid #ef4444; position: fixed; pointer-events: none; z-index: 100; transform: translate(-50%, -50%); display: none; }
-        .info-box { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px; margin-top: 15px; font-size: 0.85em; color: var(--muted); line-height: 1.5; }
-        .info-box strong { color: var(--text); }
-        .service-links { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .service-link { display: block; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; text-align: center; transition: 0.2s; }
-        .service-link:hover { background: var(--primary); border-color: var(--primary); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>✨ AI Smart Remover</h1>
-        <p>Удали объект кистью или используй готовый сервис</p>
-    </div>
+
+<div class="container">
+    <h1>AI Smart Remover</h1>
+    <p>Загрузите фото, чтобы удалить объект</p>
     
-    <div class="card">
-        <label class="upload-btn" id="uploadBtn">📷 Нажми, чтобы выбрать фото<input type="file" id="fileInput" accept="image/*"></label>
-        <div class="canvas-container" id="canvasContainer"><canvas id="imgCanvas"></canvas><canvas id="maskCanvas"></canvas></div>
-        <div class="controls" id="brushControls" style="display: none;">
-            <div class="control-group"><label>Размер кисти: <span id="brushSizeVal">20</span>px</label><input type="range" id="brushSize" min="5" max="100" value="20"></div>
-            <div class="control-group"><button class="btn btn-secondary" onclick="clearMask()" style="margin-top: 22px;">🗑️ Очистить маску</button></div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3 style="margin-bottom: 10px;">🎯 Готовые сервисы (работают 100%)</h3>
-        <div class="info-box">
-            <strong>Как использовать:</strong><br>
-            1. Загрузи фото выше<br>
-            2. Закрась объект красной кистью<br>
-            3. Нажми на сервис ниже — он откроется в новой вкладке<br>
-            4. Загрузи фото туда и удали объект
-        </div>
-        
-        <div class="service-links">
-            <a href="https://cleanup.pictures" target="_blank" class="service-link">
-                🧹 Cleanup.pictures — лучшее удаление объектов
-            </a>
-            <a href="https://www.photoroom.com/tools/background-remover" target="_blank" class="service-link">
-                🖼️ PhotoRoom — удаление фона и объектов
-            </a>
-            <a href="https://magicstudio.com/magic-eraser" target="_blank" class="service-link">
-                ✨ Magic Eraser — умное удаление
-            </a>
-            <a href="https://huggingface.co/spaces/fffiloni/lama" target="_blank" class="service-link">
-                🤖 LaMa (Hugging Face) — нейросеть для удаления
-            </a>
-        </div>
-    </div>
-
-    <div class="brush-preview" id="brushPreview"></div>
-
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const canvasContainer = document.getElementById('canvasContainer');
-        const brushControls = document.getElementById('brushControls');
-        const imgCanvas = document.getElementById('imgCanvas');
-        const maskCanvas = document.getElementById('maskCanvas');
-        const ctxImg = imgCanvas.getContext('2d');
-        const ctxMask = maskCanvas.getContext('2d');
-        const brushSizeInput = document.getElementById('brushSize');
-        const brushSizeVal = document.getElementById('brushSizeVal');
-        const brushPreview = document.getElementById('brushPreview');
-
-        let isDrawing = false, hasImage = false, currentBrushSize = 20;
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            const img = new Image();
-            img.onload = () => {
-                uploadBtn.style.display = 'none'; canvasContainer.style.display = 'block';
-                brushControls.style.display = 'flex';
-                setTimeout(() => {
-                    const containerWidth = canvasContainer.offsetWidth;
-                    const safeWidth = containerWidth > 0 ? containerWidth : canvasContainer.parentElement.offsetWidth - 40;
-                    const scale = safeWidth / img.width; const w = safeWidth; const h = Math.max(100, img.height * scale);
-                    imgCanvas.width = w; maskCanvas.width = w; imgCanvas.height = h; maskCanvas.height = h;
-                    ctxImg.drawImage(img, 0, 0, w, h); clearMask(); hasImage = true;
-                }, 50);
-            }; img.src = URL.createObjectURL(file);
-        });
-
-        function getPos(e) {
-            const rect = maskCanvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: (clientX - rect.left) * (maskCanvas.width / rect.width), y: (clientY - rect.top) * (maskCanvas.height / rect.height) };
-        }
-        function startDraw(e) { if (!hasImage) return; isDrawing = true; draw(e); }
-        function endDraw() { isDrawing = false; }
-        function draw(e) {
-            if (!isDrawing || !hasImage) return; e.preventDefault();
-            const pos = getPos(e); ctxMask.fillStyle = 'rgba(255, 0, 0, 0.5)';
-            ctxMask.beginPath(); ctxMask.arc(pos.x, pos.y, currentBrushSize / 2, 0, Math.PI * 2); ctxMask.fill();
-        }
-        maskCanvas.addEventListener('mousedown', startDraw);
-        maskCanvas.addEventListener('mousemove', (e) => { draw(e); updateBrushPreview(e); });
-        maskCanvas.addEventListener('mouseup', endDraw); maskCanvas.addEventListener('mouseleave', endDraw);
-        maskCanvas.addEventListener('touchstart', startDraw, {passive: false});
-        maskCanvas.addEventListener('touchmove', (e) => { draw(e); updateBrushPreview(e); }, {passive: false});
-        maskCanvas.addEventListener('touchend', endDraw);
-
-        function updateBrushPreview(e) {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            brushPreview.style.left = clientX + 'px'; brushPreview.style.top = clientY + 'px';
-            brushPreview.style.width = currentBrushSize + 'px'; brushPreview.style.height = currentBrushSize + 'px';
-            brushPreview.style.display = 'block';
-        }
-        document.body.addEventListener('mouseleave', () => brushPreview.style.display = 'none');
-        brushSizeInput.addEventListener('input', (e) => { currentBrushSize = e.target.value; brushSizeVal.textContent = currentBrushSize; });
-        function clearMask() { ctxMask.clearRect(0, 0, maskCanvas.width, maskCanvas.height); }
-    </script>
-</body>
-</html>
+    <div class="upload-area" onclick="document.getElementById
