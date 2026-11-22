@@ -8,57 +8,175 @@
         :root {
             --bg: #0f172a;
             --primary: #3b82f6;
+            --primary-hover: #2563eb;
             --text: #f8fafc;
+            --muted: #94a3b8;
             --card: #1e293b;
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background: var(--bg);
+            background-color: var(--bg);
             color: var(--text);
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
             padding: 20px;
         }
-        .upload-area {
-            border: 2px dashed var(--primary);
+
+        .container {
+            width: 100%;
+            max-width: 520px;
             background: var(--card);
-            border-radius: 15px;
-            padding: 40px 20px;
-            margin: 20px 0;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 26px;
+        }
+
+        p {
+            color: var(--muted);
+            margin-top: -8px;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .upload-area {
+            border: 2px dashed #475569;
+            border-radius: 14px;
+            padding: 35px 20px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.4);
         }
-        #preview {
-            width: 100%;
-            border-radius: 10px;
-            display: none;
-            margin-top: 20px;
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
         }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
         .btn {
+            display: inline-block;
             background: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 30px;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px 24px;
             border-radius: 10px;
-            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-action {
             width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            font-size: 16px;
+            display: none;
+        }
+
+        #preview-container {
             margin-top: 20px;
             display: none;
         }
-        input[type="file"] { display: none; }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: #0b1120;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>AI Smart Remover</h1>
-    <p>Загрузите фото, чтобы удалить объект</p>
-    
-    <div class="upload-area" onclick="document.getElementById
+    <p>Удаление нежелательных объектов с изображений</p>
+
+    <div class="upload-area" id="drop-zone">
+        <span class="upload-icon">📁</span>
+        <div style="margin-bottom: 12px;">Перетащите файл сюда или</div>
+        <label for="file-input" class="btn">Выбрать фото</label>
+        <input type="file" id="file-input" accept="image/*">
+    </div>
+
+    <div id="preview-container">
+        <img id="preview-img" alt="Предпросмотр">
+        <button class="btn btn-action" id="process-btn">Удалить объект</button>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('preview-img');
+    const processBtn = document.getElementById('process-btn');
+    const dropZone = document.getElementById('drop-zone');
+
+    function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+            processBtn.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        handleFile(e.target.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--primary)';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#475569';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#475569';
+        handleFile(e.dataTransfer.files[0]);
+    });
+
+    processBtn.addEventListener('click', () => {
+        alert('Фото готово к отправке на сервер для обработки нейросетью!');
+    });
+</script>
+
+</body>
+</html>
