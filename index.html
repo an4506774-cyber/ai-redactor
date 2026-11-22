@@ -3,67 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
     <title>AI Smart Remover</title>
     <style>
         :root {
             --bg: #0f172a;
-            --card-bg: #1e293b;
+            --card: #1e293b;
             --primary: #3b82f6;
             --primary-hover: #2563eb;
             --text: #f8fafc;
-            --text-muted: #94a3b8;
+            --muted: #94a3b8;
             --border: #334155;
+            --input-bg: #0b1120;
         }
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
         .container {
             width: 100%;
-            max-width: 500px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            max-width: 540px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             text-align: center;
         }
 
         h1 {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            font-weight: 700;
+            margin-top: 0;
+            font-size: 26px;
         }
 
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        p {
+            color: var(--muted);
+            margin-top: -6px;
             margin-bottom: 24px;
+            font-size: 15px;
         }
 
         .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 32px 16px;
+            border: 2px dashed #475569;
+            border-radius: 14px;
+            padding: 36px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
-            position: relative;
+            background: rgba(15, 23, 42, 0.4);
         }
 
         .upload-area:hover, .upload-area.dragover {
@@ -72,51 +69,99 @@
         }
 
         .upload-icon {
-            font-size: 2.5rem;
+            font-size: 44px;
             margin-bottom: 12px;
             display: block;
         }
 
         .btn {
-            background-color: var(--primary);
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 12px;
             display: inline-block;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s ease;
         }
 
         .btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .preview-wrapper {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .preview-wrapper img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            object-fit: contain;
-            border: 1px solid var(--border);
-            margin-bottom: 16px;
-        }
-
-        .action-btn {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
+            background: var(--primary-hover);
         }
 
         input[type="file"] {
             display: none;
+        }
+
+        #preview-section {
+            margin-top: 24px;
+            display: none;
+            text-align: left;
+        }
+
+        #preview-img {
+            width: 100%;
+            max-height: 320px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            display: block;
+            margin-bottom: 18px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .prompt-input:focus {
+            border-color: var(--primary);
+        }
+
+        .prompt-input::placeholder {
+            color: #64748b;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        .btn-change {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .btn-change:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
         }
     </style>
 </head>
@@ -124,46 +169,67 @@
 
 <div class="container">
     <h1>AI Smart Remover</h1>
-    <p class="subtitle">Удаление объектов и дефектов с фотографий с помощью нейросети</p>
+    <p>Удаление нежелательных объектов с изображений по описанию</p>
 
-    <div class="upload-area" id="dropZone">
+    <!-- Зона загрузки -->
+    <div class="upload-area" id="drop-zone">
         <span class="upload-icon">📁</span>
-        <p>Перетащите фото сюда или нажмите кнопку ниже</p>
-        <label for="fileInput" class="btn">Выбрать файл</label>
-        <input type="file" id="fileInput" accept="image/*">
+        <div style="margin-bottom: 14px; color: var(--muted);">Перетащите фото сюда или нажмите кнопку</div>
+        <label for="file-input" class="btn">Выбрать фото</label>
+        <input type="file" id="file-input" accept="image/*">
     </div>
 
-    <div class="preview-wrapper" id="previewContainer">
-        <img id="previewImage" alt="Предпросмотр">
-        <button class="btn action-btn" id="removeBtn">Удалить объект</button>
+    <!-- Блок предпросмотра и запроса -->
+    <div id="preview-section">
+        <img id="preview-img" alt="Предпросмотр">
+
+        <div class="input-group">
+            <label for="prompt-input">Что именно нужно удалить?</label>
+            <input 
+                type="text" 
+                id="prompt-input" 
+                class="prompt-input" 
+                placeholder="Например: человек на заднем плане, логотип, провода"
+                autocomplete="off"
+            >
+        </div>
+
+        <button class="btn btn-submit" id="process-btn">Удалить с фото</button>
+        <button class="btn btn-change" id="change-btn">Выбрать другое фото</button>
     </div>
 </div>
 
 <script>
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const removeBtn = document.getElementById('removeBtn');
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const previewSection = document.getElementById('preview-section');
+    const previewImg = document.getElementById('preview-img');
+    const promptInput = document.getElementById('prompt-input');
+    const processBtn = document.getElementById('process-btn');
+    const changeBtn = document.getElementById('change-btn');
 
-    function loadFile(file) {
+    let currentFile = null;
+
+    function handleFile(file) {
         if (!file || !file.type.startsWith('image/')) {
-            alert('Пожалуйста, выберите файл изображения (PNG, JPG, WebP).');
+            alert('Пожалуйста, выберите файл изображения (PNG, JPG, WEBP).');
             return;
         }
 
+        currentFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
-            previewImage.src = e.target.result;
+            previewImg.src = e.target.result;
             dropZone.style.display = 'none';
-            previewContainer.style.display = 'block';
+            previewSection.style.display = 'block';
+            promptInput.focus();
         };
         reader.readAsDataURL(file);
     }
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
-            loadFile(e.target.files[0]);
+            handleFile(e.target.files[0]);
         }
     });
 
@@ -180,12 +246,28 @@
         e.preventDefault();
         dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
-            loadFile(e.dataTransfer.files[0]);
+            handleFile(e.dataTransfer.files[0]);
         }
     });
 
-    removeBtn.addEventListener('click', () => {
-        alert('Изображение готово к обработке!');
+    changeBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        currentFile = null;
+        promptInput.value = '';
+        previewSection.style.display = 'none';
+        dropZone.style.display = 'block';
+    });
+
+    processBtn.addEventListener('click', () => {
+        const query = promptInput.value.trim();
+
+        if (!query) {
+            alert('Пожалуйста, укажите в поле ввода, какой объект необходимо удалить.');
+            promptInput.focus();
+            return;
+        }
+
+        alert(`Данные готовы к отправке:\n• Файл: ${currentFile.name}\n• Удалить: "${query}"`);
     });
 </script>
 
