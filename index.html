@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Smart Remover</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Smart Object Remover</title>
     <style>
         :root {
             --bg: #0f172a;
@@ -14,6 +14,7 @@
             --muted: #94a3b8;
             --border: #334155;
             --input-bg: #0b1120;
+            --success: #10b981;
         }
 
         * {
@@ -35,30 +36,57 @@
 
         .container {
             width: 100%;
-            max-width: 520px;
+            max-width: 540px;
             background: var(--card);
             border-radius: 20px;
-            padding: 32px;
+            padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border);
             text-align: center;
         }
 
         h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 22px;
+            margin-bottom: 6px;
         }
 
         p.subtitle {
             color: var(--muted);
-            font-size: 14px;
-            margin-bottom: 24px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .api-block {
+            margin-bottom: 20px;
+            text-align: left;
+            background: var(--input-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .api-block label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .api-block input {
+            width: 100%;
+            padding: 8px 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
         }
 
         .upload-area {
             border: 2px dashed #475569;
             border-radius: 14px;
-            padding: 36px 20px;
+            padding: 30px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             background: rgba(15, 23, 42, 0.4);
@@ -70,15 +98,15 @@
         }
 
         .upload-icon {
-            font-size: 44px;
-            margin-bottom: 12px;
+            font-size: 40px;
+            margin-bottom: 8px;
             display: block;
         }
 
         .upload-text {
             color: var(--muted);
-            font-size: 14px;
-            margin-bottom: 14px;
+            font-size: 13px;
+            margin-bottom: 12px;
         }
 
         .btn {
@@ -86,11 +114,12 @@
             background: var(--primary);
             color: #ffffff;
             font-weight: 600;
-            padding: 12px 24px;
-            border-radius: 10px;
+            padding: 11px 20px;
+            border-radius: 9px;
             border: none;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
+            text-decoration: none;
             transition: background 0.2s ease;
         }
 
@@ -102,122 +131,174 @@
             display: none;
         }
 
-        #preview-section {
-            margin-top: 20px;
+        #editor-section, #result-section {
             display: none;
             text-align: left;
+            margin-top: 15px;
         }
 
-        #preview-img {
+        .img-view {
             width: 100%;
-            max-height: 320px;
-            border-radius: 12px;
+            max-height: 280px;
+            border-radius: 10px;
             object-fit: contain;
             background: var(--input-bg);
             border: 1px solid var(--border);
             display: block;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
+            gap: 6px;
+            margin-bottom: 14px;
         }
 
         .input-group label {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
             color: var(--text);
         }
 
         .prompt-input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px;
             background: var(--input-bg);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text);
-            font-size: 15px;
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         .prompt-input:focus {
             border-color: var(--primary);
         }
 
-        .prompt-input::placeholder {
-            color: #64748b;
-        }
-
-        .btn-submit {
+        .btn-full {
             width: 100%;
-            padding: 14px;
-            font-size: 16px;
+            padding: 12px;
+            font-size: 15px;
         }
 
         .btn-change {
             background: transparent;
             color: var(--muted);
             border: 1px solid var(--border);
-            margin-top: 10px;
+            margin-top: 8px;
             width: 100%;
+            padding: 10px;
         }
 
         .btn-change:hover {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text);
         }
+
+        .loader {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s ease-in-out infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>AI Smart Remover</h1>
-    <p class="subtitle">Удаление нежелательных объектов с изображений по описанию</p>
+    <h1>Удаление объектов с фото</h1>
+    <p class="subtitle">Нейросетевое стирание лишних деталей</p>
 
-    <div class="upload-area" id="drop-zone">
-        <span class="upload-icon">📁</span>
-        <div class="upload-text">Перетащите фото сюда или нажмите кнопку</div>
-        <label for="file-input" class="btn">Выбрать фото</label>
-        <input type="file" id="file-input" accept="image/*">
+    <!-- Настройка API ключа (сохраняется в браузере) -->
+    <div class="api-block">
+        <label for="api-key">ClipDrop API Key (вставьте ключ):</label>
+        <input type="password" id="api-key" placeholder="Вставьте ваш API-ключ ClipDrop...">
     </div>
 
-    <div id="preview-section">
-        <img id="preview-img" alt="Предпросмотр">
+    <!-- Загрузка -->
+    <div class="upload-area" id="drop-zone">
+        <span class="upload-icon">📁</span>
+        <div class="upload-text">Перетащите картинку или нажмите кнопку</div>
+        <label for="file-input" class="btn">Выбрать фото</label>
+        <input type="file" id="file-input" accept="image/png, image/jpeg, image/webp">
+    </div>
+
+    <!-- Редактор: ввод описания -->
+    <div id="editor-section">
+        <img id="preview-img" class="img-view" alt="Выбранное фото">
 
         <div class="input-group">
-            <label for="prompt-input">Что именно нужно удалить?</label>
+            <label for="prompt-input">Что удалить с фотографии?</label>
             <input 
                 type="text" 
                 id="prompt-input" 
                 class="prompt-input" 
-                placeholder="Например: человек на фоне, провод, водяной знак"
+                placeholder="Например: watermark, person on background, electric wire"
                 autocomplete="off"
             >
         </div>
 
-        <button class="btn btn-submit" id="process-btn">Удалить с фото</button>
+        <button class="btn btn-full" id="process-btn">Удалить с фото</button>
         <button class="btn btn-change" id="change-btn">Выбрать другое фото</button>
+    </div>
+
+    <!-- Загрузка (спиннер) -->
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 13px; color: var(--muted);">Нейросеть удаляет объект, подождите...</div>
+    </div>
+
+    <!-- Результат -->
+    <div id="result-section">
+        <div style="font-weight: 600; margin-bottom: 8px;">Результат:</div>
+        <img id="result-img" class="img-view" alt="Результат">
+        <a id="download-btn" class="btn btn-full" style="text-align: center;" download="cleaned-image.png">Скачать результат</a>
+        <button class="btn btn-change" id="reset-btn">Обработать новое фото</button>
     </div>
 </div>
 
 <script>
+    const apiKeyInput = document.getElementById('api-key');
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
-    const previewSection = document.getElementById('preview-section');
+    const editorSection = document.getElementById('editor-section');
     const previewImg = document.getElementById('preview-img');
     const promptInput = document.getElementById('prompt-input');
     const processBtn = document.getElementById('process-btn');
     const changeBtn = document.getElementById('change-btn');
+    const loader = document.getElementById('loader');
+    const resultSection = document.getElementById('result-section');
+    const resultImg = document.getElementById('result-img');
+    const downloadBtn = document.getElementById('download-btn');
+    const resetBtn = document.getElementById('reset-btn');
 
     let currentFile = null;
 
-    function handleFile(file) {
+    // Восстанавливаем сохраненный ключ из памяти браузера
+    if (localStorage.getItem('clipdrop_api_key')) {
+        apiKeyInput.value = localStorage.getItem('clipdrop_api_key');
+    }
+
+    apiKeyInput.addEventListener('input', () => {
+        localStorage.setItem('clipdrop_api_key', apiKeyInput.value.trim());
+    });
+
+    function setFile(file) {
         if (!file || !file.type.startsWith('image/')) {
-            alert('Пожалуйста, выберите файл изображения (PNG, JPG, WEBP).');
+            alert('Пожалуйста, выберите файл изображения (PNG, JPG или WEBP).');
             return;
         }
 
@@ -226,16 +307,15 @@
         reader.onload = (e) => {
             previewImg.src = e.target.result;
             dropZone.style.display = 'none';
-            previewSection.style.display = 'block';
+            resultSection.style.display = 'none';
+            editorSection.style.display = 'block';
             promptInput.focus();
         };
         reader.readAsDataURL(file);
     }
 
     fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
+        if (e.target.files.length > 0) setFile(e.target.files[0]);
     });
 
     dropZone.addEventListener('dragover', (e) => {
@@ -243,36 +323,80 @@
         dropZone.classList.add('dragover');
     });
 
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-            handleFile(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files.length > 0) setFile(e.dataTransfer.files[0]);
     });
 
-    changeBtn.addEventListener('click', () => {
+    function resetView() {
         fileInput.value = '';
         currentFile = null;
         promptInput.value = '';
-        previewSection.style.display = 'none';
+        loader.style.display = 'none';
+        editorSection.style.display = 'none';
+        resultSection.style.display = 'none';
         dropZone.style.display = 'block';
-    });
+    }
 
-    processBtn.addEventListener('click', () => {
-        const query = promptInput.value.trim();
+    changeBtn.addEventListener('click', resetView);
+    resetBtn.addEventListener('click', resetView);
 
-        if (!query) {
-            alert('Пожалуйста, укажите объект, который требуется удалить.');
+    // Отправка на сервер
+    processBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        const prompt = promptInput.value.trim();
+
+        if (!apiKey) {
+            alert('Пожалуйста, введите ваш API-ключ в поле вверху.');
+            apiKeyInput.focus();
+            return;
+        }
+
+        if (!prompt) {
+            alert('Напишите, что именно нужно удалить с фотографии.');
             promptInput.focus();
             return;
         }
 
-        alert(`Файл "${currentFile.name}" готов к обработке.\nОбъект: "${query}"`);
+        // Переключаем интерфейс в режим загрузки
+        editorSection.style.display = 'none';
+        loader.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('image_file', currentFile);
+        formData.append('text_prompt', prompt);
+
+        try {
+            // Запрос к сервису ClipDrop Inpainting
+            const response = await fetch('https://clipdrop-api.co/text-inpainting/v1', {
+                method: 'POST',
+                headers: {
+                    'x-api-key': apiKey
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Ошибка сервиса (${response.status}): ${errorData}`);
+            }
+
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
+
+            loader.style.display = 'none';
+            resultImg.src = imageUrl;
+            downloadBtn.href = imageUrl;
+            resultSection.style.display = 'block';
+
+        } catch (err) {
+            loader.style.display = 'none';
+            editorSection.style.display = 'block';
+            alert('Произошла ошибка при обработке: ' + err.message);
+        }
     });
 </script>
 
